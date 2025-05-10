@@ -1,120 +1,94 @@
 // app.js
 
-// 1) Load the entire dictionary once
+// 一次性讀入整本字典
 let tzDict = {};
 fetch('tzdict.json')
-  .then(r => r.json())
+  .then(r => {
+    console.log('tzdict.json status:', r.status);
+    return r.json();
+  })
   .then(j => {
     tzDict = j;
+    console.log('Loaded tzDict, total entries:', Object.keys(tzDict).length);
     initPage();
   })
   .catch(e => {
     console.error('字典載入失敗', e);
-    alert('無法載入字典，請稍後重試');
+    alert('無法載入字典，請稍後再試');
   });
 
-// 2) Your review schedule: update this object with new dates/characters
+// 排程：只要在這裡增減日期／字，就自動生效
 const schedule = {
   '2025-05-10': ['掌','瓣','梢','禮','取','抬','初','夏','包','類','目','描','極','障'],
   '2025-05-11': ['鋪','童','掌','瓣','梢','禮','腰','蓋','技','票','程','結','漠','綿'],
-  // … add more dates here …
+  // …後續新增日期
 };
 
-// 3) Once DOM loaded and tzDict ready, initialize dropdown & calendar
+// 初始化頁面：填 dropdown、綁事件
 function initPage() {
   const dateSelect = document.getElementById('dateSelect');
-  const showCalendarBtn = document.getElementById('showCalendar');
-
-  // Populate date dropdown
   Object.keys(schedule).forEach(date => {
     const opt = document.createElement('option');
-    opt.value = date;
-    opt.textContent = date;
+    opt.value = date; opt.textContent = date;
     dateSelect.appendChild(opt);
   });
-
-  // Hooks
   dateSelect.addEventListener('change', loadDay);
-  showCalendarBtn.addEventListener('click', toggleCalendar);
-
-  // Load first date by default
+  document.getElementById('showCalendar').addEventListener('click', toggleCalendar);
   dateSelect.selectedIndex = 0;
   loadDay();
 }
 
-// 4) Load & render one day’s flashcards
+// 載入 & 渲染當日卡片
 function loadDay() {
   const date = document.getElementById('dateSelect').value;
-  const chars = schedule[date] || [];
   const area = document.getElementById('contentArea');
-  area.innerHTML = '';  
-
-  // Create a flashcard for each character
-  chars.forEach(ch => {
-    const card = createFlashcard(ch);
-    area.appendChild(card);
+  area.innerHTML = '';
+  (schedule[date] || []).forEach(ch => {
+    area.appendChild(createFlashcard(ch));
   });
-
-  // “標記為完成” button
+  // 完成 & 測驗按鈕
   const doneBtn = document.createElement('button');
   doneBtn.textContent = '標記為完成';
   doneBtn.onclick = () => {
-    localStorage.setItem(date,'done');
-    buildCalendar();
+    localStorage.setItem(date,'done'); buildCalendar();
     alert(`${date} 已完成！`);
   };
   area.appendChild(doneBtn);
-
-  // “開始小測驗” button
   const quizBtn = document.createElement('button');
   quizBtn.textContent = '開始小測驗';
-  quizBtn.onclick = () => startQuiz(chars);
+  quizBtn.onclick = () => startQuiz(schedule[date]);
   area.appendChild(quizBtn);
 }
 
-// 5) Build the calendar view
+// 日曆檢視
 function toggleCalendar() {
   const cv = document.getElementById('calendarView');
-  cv.style.display = cv.style.display === 'none' ? 'block' : 'none';
-  if (cv.style.display === 'block') buildCalendar();
+  cv.style.display = cv.style.display==='none'?'block':'none';
+  if(cv.style.display==='block') buildCalendar();
 }
 function buildCalendar() {
   const tbl = document.getElementById('calendarTable');
   let row = '<tr>';
-  Object.keys(schedule).forEach(date => {
-    const done = localStorage.getItem(date) === 'done';
-    row += `<td style="padding:8px; background:${done?'#cfc':'#fdd'}">${date}</td>`;
+  Object.keys(schedule).forEach(d => {
+    const done = localStorage.getItem(d)==='done';
+    row += `<td style="padding:8px;background:${done?'#cfc':'#fdd'}">${d}</td>`;
   });
   row += '</tr>';
   tbl.innerHTML = row;
 }
 
-// 6) Create one flashcard element in “Demo V2” style
+// 產生單張卡片（Demo V2 版式）
 function createFlashcard(ch) {
   const info = tzDict[ch] || {};
-  const {
-    bopomofo    = '—',
-    radical     = '—',
-    definition  = '—',
-    phrases     = { '2':[], '3':[], '4':[] }
-  } = info;
+  const { bopomofo='—', radical='—', definition='—', phrases={} } = info;
 
-  // helper to render phrase lists
   const renderPhrases = len => {
-    const arr = phrases[String(len)] || [];
-    if (!arr.length) {
-      return `<div><strong>常用詞（${len}字）：</strong>—</div>`;
-    }
-    const items = arr.map(p =>
-      `<li>${p.word} – ${p.zh}；<em>${p.en}</em></li>`
-    ).join('');
-    return `
-      <div><strong>常用詞（${len}字）：</strong></div>
-      <ul>${items}</ul>
-    `;
+    const arr = phrases[String(len)]||[];
+    if(!arr.length) return `<div><strong>常用詞（${len}字）：</strong>—</div>`;
+    const items = arr.map(p => `<li>${p.word} – ${p.zh}；<em>${p.en}</em></li>`).join('');
+    return `<div><strong>常用詞（${len}字）：</strong></div><ul>${items}</ul>`;
   };
 
-  // build the card
   const card = document.createElement('div');
   card.className = 'flashcard';
   card.innerHTML = `
@@ -129,7 +103,7 @@ function createFlashcard(ch) {
   return card;
 }
 
-// 7) Stub for quiz (you can expand later)
-function startQuiz(chars) {
-  alert('小測驗功能待開發…');
+// 小測驗 Stub
+function startQuiz(chars){
+  alert('小測驗功能尚未實作');
 }
