@@ -87,21 +87,21 @@ function selectDate(dateStr, cell) {
 function loadDay(date) {
   const area = document.getElementById('contentArea');
   area.innerHTML = `<h2>${date} 生字</h2>`;
+  (schedule[date]||[]).forEach(ch => area.appendChild(createFlashcard(ch)));
 
-  (schedule[date]||[]).forEach(ch => {
-    area.appendChild(createFlashcard(ch));
-  });
-
-  // 標記完成
+  // Toggle 完成/取消完成
   const doneBtn = document.createElement('button');
-  doneBtn.textContent = '標記為完成';
+  const isDone = localStorage.getItem(date) === 'done';
+  doneBtn.textContent = isDone ? '取消完成' : '標記為完成';
   doneBtn.onclick = () => {
-    localStorage.setItem(date, 'done');
+    if (isDone) {
+      localStorage.removeItem(date);
+    } else {
+      localStorage.setItem(date, 'done');
+    }
+    // 重新畫月曆並重載當日，讓按鈕文字跟顏色都能即時更新
     renderCalendar();
-    // 重新選取同一天
-    const cell = document.querySelector(`#calendar div[data-date="${date}"]`);
-    if (cell) selectDate(date, cell);
-    alert(`${date} 已完成！`);
+    selectDate(date, document.querySelector(`#calendar div[data-date="${date}"]`));
   };
   area.appendChild(doneBtn);
 
