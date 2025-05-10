@@ -89,15 +89,16 @@ function loadDay(date) {
   const chars = schedule[date] || [];
   chars.forEach(ch => area.appendChild(createFlashcard(ch)));
 
-  // 標記完成
-  const doneBtn = document.createElement('button');
-  doneBtn.textContent = '標記為完成';
-  doneBtn.onclick = () => {
-    localStorage.setItem(date,'done');
-    buildCalendar();
-    alert(`${date} 已完成！`);
-  };
-  area.appendChild(doneBtn);
+// 標記完成
+const doneBtn = document.createElement('button');
+doneBtn.textContent = '標記為完成';
+doneBtn.onclick = () => {
+  localStorage.setItem(date, 'done');  // save state
+  renderCalendar();                     // re-draw the main calendar grid
+  loadDay(date);                        // re-load cards so you see the green cell still selected
+  alert(`${date} 已完成！`);
+};
+area.appendChild(doneBtn);
 
   // 小測驗（待實作）
   const quizBtn = document.createElement('button');
