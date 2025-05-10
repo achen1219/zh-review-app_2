@@ -1,11 +1,62 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <title>每日生字複習</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    h1 { margin-bottom: 10px; }
+    /* 圖例 */
+    .legend span {
+      display:inline-block; width:12px; height:12px; margin-right:4px;
+      vertical-align:middle;
+      border:1px solid #ddd;
+    }
+    .legend .has-schedule { background:#eef; }
+    .legend .completed    { background:#cfc; }
+    .legend .today-box     { border:2px solid #f90; background: transparent; }
+
+    /* 月曆格 */
+    #calendar {
+      display: grid;
+      grid-template-columns: repeat(7,1fr);
+      gap: 4px;
+      margin: 10px 0 20px;
+    }
+    #calendar div {
+      padding: 8px;
+      text-align: center;
+      border: 1px solid #ddd;
+      cursor: pointer;
+      user-select: none;
+    }
+    #calendar .has-schedule { background: #eef; }
+    #calendar .completed    { background: #cfc; }
+    #calendar .today        { border: 2px solid #f90; }
+    #calendar .selected     { outline: 2px solid #06c; }
+
+    /* Flashcard */
+    .flashcard {
+      border: 1px solid #ccc;
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 8px;
+      background: #f9f9f9;
+    }
+    .flashcard h4 { margin: 0 0 5px; font-size: 1.2em; }
+    .flashcard ul { margin: 5px 0 10px 20px; padding: 0; list-style: disc; }
+    .flashcard em { font-style: italic; }
+    button { padding: 5px 10px; margin: 5px; }
+  </style>
+</head>
 <body>
   <h1>每日生字複習</h1>
 
   <!-- 圖例 -->
-  <div style="margin-bottom:10px;">
-    <span style="display:inline-block;width:12px;height:12px;background:#eef;border:1px solid #ddd;margin-right:4px;"></span> 有排程
-    <span style="display:inline-block;width:12px;height:12px;background:#cfc;border:1px solid #ddd;margin:0 4px 0 12px;"></span> 已完成
-    <span style="display:inline-block;width:12px;height:12px;border:2px solid #f90;margin:0 4px 0 12px;"></span> 今天
+  <div class="legend">
+    <span class="has-schedule"></span> 有排程
+    <span class="completed"></span> 已完成
+    <span class="today-box"></span> 今天
   </div>
 
   <!-- 月份導航 -->
@@ -19,5 +70,7 @@
   <!-- 生字卡片顯示區 -->
   <main id="contentArea"></main>
 
+  <!-- 載入 app.js -->
   <script src="app.js"></script>
 </body>
+</html>
