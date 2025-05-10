@@ -5,52 +5,63 @@
   <title>每日生字複習</title>
   <style>
     body { font-family: sans-serif; padding: 20px; }
-    header { margin-bottom: 20px; }
+    h1 { margin-bottom: 10px; }
+    /* 月曆格 */
+    #calendar {
+      display: grid;
+      grid-template-columns: repeat(7,1fr);
+      gap: 4px;
+      margin-bottom: 20px;
+    }
+    #calendar div {
+      padding: 8px;
+      text-align: center;
+      border: 1px solid #ddd;
+      cursor: pointer;
+      user-select: none;
+    }
+    #calendar .has-schedule { background: #eef; }
+    #calendar .today       { border: 2px solid #f90; }
+    #calendar .selected    { background: #cfc; }
+    /* 完成日曆檢視 */
     #calendarView { display: none; margin-top: 20px; }
-    #calendarView table { border-collapse: collapse; width: 100%; }
-    #calendarView td { border: 1px solid #ccc; text-align: center; padding: 8px; }
-    .flashcard { border: 1px solid #ccc; padding: 10px; margin: 10px 0; border-radius: 8px; background: #f9f9f9; }
-    .flashcard h4 { margin: 0 0 5px; }
-    .flashcard div { margin: 3px 0; }
-    button { padding: 5px 10px; margin-top: 10px; }
-    #tzDicObjOutput { background: #fff !important; }
+    #calendarTable { border-collapse: collapse; width: 100%; }
+    #calendarTable td { border: 1px solid #ccc; text-align: center; padding: 8px; }
+    /* Flashcard */
+    .flashcard {
+      border: 1px solid #ccc;
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 8px;
+      background: #f9f9f9;
+    }
+    .flashcard h4 { margin: 0 0 5px; font-size: 1.2em; }
+    .flashcard ul { margin: 5px 0 10px 20px; padding: 0; list-style: disc; }
+    .flashcard em { font-style: italic; }
   </style>
 </head>
 <body>
-  <header>
-    <h1>每日生字複習</h1>
-    <label for="dateSelect">選擇日期：</label>
-    <select id="dateSelect"></select>
-    <button id="showCalendar">完成日曆</button>
-  </header>
+  <h1>每日生字複習</h1>
 
+  <!-- 月份導航 -->
+  <button id="prevMonth">&lt;</button>
+  <span id="monthLabel"></span>
+  <button id="nextMonth">&gt;</button>
+
+  <!-- 月曆格 -->
+  <div id="calendar"></div>
+
+  <!-- 生字卡片顯示區 -->
   <main id="contentArea"></main>
 
+  <!-- 完成日曆檢視 -->
+  <button id="showCalendar">完成日曆</button>
   <div id="calendarView">
     <h2>完成日曆</h2>
     <table id="calendarTable"></table>
   </div>
 
-  <!-- 載入 jQuery & ToneOZDic UI -->
-  <script src="tzdic/tzlib/jquery.min.js"></script>
-  <script src="tzdic/tzdicui.js" charset="utf-8"></script>
-  <!-- 你的業務程式 -->
+  <!-- 載入 app.js -->
   <script src="app.js"></script>
-
-  <script>
-    // ToneOZDic UI 初始化
-    $(document).ready(() => {
-      window.tzUI = new TZDicUI();
-      const tzObjs = tzUI.init();
-      tzObjs.objOutput.css({
-        position: "fixed",
-        top: "10px",
-        right: "10px",
-        width: "40%",
-        height: "80%",
-        "z-index": 9999
-      });
-    });
-  </script>
 </body>
 </html>
