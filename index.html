@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <title>每日生字複習</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    header { margin-bottom: 20px; }
+    #calendarView { display: none; margin-top: 20px; }
+    #calendarView table { border-collapse: collapse; width: 100%; }
+    #calendarView td { border: 1px solid #ccc; text-align: center; padding: 8px; }
+    .flashcard { border: 1px solid #ccc; padding: 10px; margin: 10px 0; border-radius: 8px; background: #f9f9f9; }
+    .flashcard h4 { margin: 0 0 5px; }
+    .flashcard div { margin: 3px 0; }
+    button { padding: 5px 10px; margin-top: 10px; }
+    #tzDicObjOutput { background: #fff !important; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>每日生字複習</h1>
+    <label for="dateSelect">選擇日期：</label>
+    <select id="dateSelect"></select>
+    <button id="showCalendar">完成日曆</button>
+  </header>
+
+  <main id="contentArea"></main>
+
+  <div id="calendarView">
+    <h2>完成日曆</h2>
+    <table id="calendarTable"></table>
+  </div>
+
+  <!-- 載入 jQuery & ToneOZDic UI -->
+  <script src="tzdic/tzlib/jquery.min.js"></script>
+  <script src="tzdic/tzdicui.js" charset="utf-8"></script>
+  <!-- 你的業務程式 -->
+  <script src="app.js"></script>
+
+  <script>
+    // ToneOZDic UI 初始化
+    $(document).ready(() => {
+      window.tzUI = new TZDicUI();
+      const tzObjs = tzUI.init();
+      tzObjs.objOutput.css({
+        position: "fixed",
+        top: "10px",
+        right: "10px",
+        width: "40%",
+        height: "80%",
+        "z-index": 9999
+      });
+    });
+  </script>
+</body>
+</html>
