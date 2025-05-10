@@ -90,15 +90,15 @@ function loadDay(date) {
   chars.forEach(ch => area.appendChild(createFlashcard(ch)));
 
 // 標記完成
-const doneBtn = document.createElement('button');
-doneBtn.textContent = '標記為完成';
 doneBtn.onclick = () => {
-  localStorage.setItem(date, 'done');  // save state
-  renderCalendar();                     // re-draw the main calendar grid
-  loadDay(date);                        // re-load cards so you see the green cell still selected
+  // 1. Mark done in localStorage
+  localStorage.setItem(date, 'done');
+  // 2. Re-render the main month calendar so your `.completed` style is applied
+  renderCalendar();
+  // 3. Re-load the current day so the green cell stays selected
+  loadDay(date);
   alert(`${date} 已完成！`);
 };
-area.appendChild(doneBtn);
 
   // 小測驗（待實作）
   const quizBtn = document.createElement('button');
