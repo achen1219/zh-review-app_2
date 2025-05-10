@@ -34,7 +34,7 @@ async function loadDay() {
     const card = document.createElement('div');
     card.className = 'flashcard';
 
-    fetch(`tzdata/${encodeURIComponent(ch)}.json`)
+    fetch(`https://cdn.jsdelivr.net/gh/jeffreyxuan/ToneOZDic/tzdata/${encodeURIComponent(ch)}.json`)
       .then(r => r.json())
       .then(data => {
         const bopomofo = data.DESC1 || '—';
