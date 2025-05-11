@@ -150,37 +150,41 @@ function createFlashcard(ch) {
   return card;
 }
 
-// 10. 開始小測驗：四種題型隨機，四選一
+// 開始小測驗：前兩字 + 隨機八字，四種題型＋語詞定義
 function startQuiz(date, chars) {
   if (!Array.isArray(chars) || chars.length < 2) {
     alert('今天字數不足，無法進行小測驗');
     return;
   }
 
-  // (1) 前兩字 + 隨機 8 字
+  // 1. 前 2 字 + 隨機取 8 字
   const pool = [...chars];
   const frontTwo = pool.splice(0,2);
   shuffle(pool);
   const quizChars = frontTwo.concat(pool.slice(0,8));
 
-  // (2) 全域干擾池
+  // 2. 干擾選項資料
   const allBops    = Object.values(tzDict).map(i=>i.bopomofo).filter(x=>x);
   const allDefs    = Object.values(tzDict).map(i=>i.definition).filter(x=>x);
   const allPhrases = Object.values(tzDict)
     .flatMap(i=>i.phrases?.['2']||[])
     .map(p=>p.word);
-  const allCharsInPhrases = allPhrases.join('').split('');
+  // 全部短語定義
+  const allPhraseDefs = Object.values(tzDict)
+    .flatMap(i=>Object.values(i.phrases||{}))
+    .flatMap(arr=>arr)
+    .map(p=>p.zh);
 
-  // (3) 組題
+  // 3. 建立題目列表
   const questions = quizChars.map(ch => {
     const info = tzDict[ch] || {};
-    let types = ['bopomofo','definition','phrase','combine'];
+    // 隨機題型
+    let types = ['bopomofo','definition','phrase','combine','phraseDef'];
     let type = types[Math.floor(Math.random()*types.length)];
-    if (type==='phrase' && (!info.phrases||!info.phrases['2']||!info.phrases['2'].length)) {
+    // 若無短語，跳過詞語與組詞
+    const has2 = info.phrases?.['2']?.length > 0;
+    if ((type==='phrase' || type==='combine' || type==='phraseDef') && !has2) {
       type = 'definition';
-    }
-    if (type==='combine' && (!info.phrases||!info.phrases['2']||!info.phrases['2'].length)) {
-      type = 'bopomofo';
     }
 
     let text='', opts=[], ans='';
@@ -209,12 +213,24 @@ function startQuiz(date, chars) {
       opts = Array.from(set);
       shuffle(opts);
 
-    } else { // combine
+    } else if (type==='combine') {
       const word = info.phrases['2'][0].word; // e.g. 障礙
       text = `詞語辨識：下列哪個字可以和「${ch}」組成常用詞？`;
       ans  = word.replace(ch,'');
       const set = new Set([ans]);
-      while (set.size < 4) set.add(allCharsInPhrases[Math.floor(Math.random()*allCharsInPhrases.length)]);
+      while (set.size < 4) set.add(allPhrases.join('').charAt(Math.floor(Math.random()*allPhrases.join('').length)));
+      opts = Array.from(set);
+      shuffle(opts);
+
+    } else { // phraseDef
+      // 隨機挑一個 2/3/4 字短語
+      const lens = ['2','3','4'].filter(l=>info.phrases?.[l]?.length);
+      const l = lens[Math.floor(Math.random()*lens.length)];
+      const phr = info.phrases[l][Math.floor(Math.random()*info.phrases[l].length)];
+      text = `詞義判斷：「${phr.word}」是什麼意思？`;
+      ans  = phr.zh;
+      const set = new Set([ans]);
+      while (set.size < 4) set.add(allPhraseDefs[Math.floor(Math.random()*allPhraseDefs.length)]);
       opts = Array.from(set);
       shuffle(opts);
     }
@@ -222,7 +238,7 @@ function startQuiz(date, chars) {
     return { text, options: opts, answer: ans };
   });
 
-  // (4) 渲染表單
+  // 4. 渲染表單
   const area = document.getElementById('contentArea');
   area.innerHTML = `
     <h2>${date} 小測驗</h2>
@@ -241,7 +257,7 @@ function startQuiz(date, chars) {
     form.appendChild(div);
   });
 
-  // (5) 提交並評分
+  // 5. 提交評分
   document.getElementById('submitQuiz').onclick = e => {
     e.preventDefault();
     let score = 0;
