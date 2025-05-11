@@ -1,7 +1,7 @@
 // app.js
 
 // Helper: Fisher–Yates shuffle
-function shuffle(arr) {
+tunction shuffle(arr) {
   for (let i = arr.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [arr[i], arr[j]] = [arr[j], arr[i]];
@@ -52,9 +52,11 @@ function renderCalendar() {
     cal.appendChild(hd);
   });
 
-  // Blank slots before 1st
+  // Blank slots
   const firstDow = new Date(year, month, 1).getDay();
-  for (let i = 0; i < firstDow; i++) cal.appendChild(document.createElement('div'));
+  for (let i = 0; i < firstDow; i++) {
+    cal.appendChild(document.createElement('div'));
+  }
 
   // Date cells
   const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -71,7 +73,7 @@ function renderCalendar() {
     cal.appendChild(cell);
   }
 
-  // Auto-select today or first
+  // Auto-select
   const pick = schedule[today] ? today : Object.keys(schedule)[0];
   if (pick) {
     const start = document.querySelector(`#calendar div[data-date="${pick}"]`);
@@ -86,8 +88,8 @@ function selectDate(dateStr, cell) {
   loadDay(dateStr);
 }
 
-// Load that day's flashcards and controls
-target function loadDay(date) {
+// Load flashcards and controls
+function loadDay(date) {
   const area = document.getElementById('contentArea');
   const prevScore = localStorage.getItem(`score-${date}`);
   area.innerHTML = prevScore !== null
@@ -96,27 +98,27 @@ target function loadDay(date) {
 
   (schedule[date] || []).forEach(ch => area.appendChild(createFlashcard(ch)));
 
-  // Complete toggle
+  // Toggle complete/undo
   const btnDone = document.createElement('button');
   const done = localStorage.getItem(date) === 'done';
   btnDone.textContent = done ? '取消完成' : '標記為完成';
   btnDone.onclick = () => {
     if (done) localStorage.removeItem(date);
-    else localStorage.setItem(date, 'done');
+    else localStorage.setItem(date,'done');
     renderCalendar();
     const c = document.querySelector(`#calendar div[data-date="${date}"]`);
     if (c) selectDate(date, c);
   };
   area.appendChild(btnDone);
 
-  // Quiz start
+  // Start quiz
   const btnQuiz = document.createElement('button');
   btnQuiz.textContent = '開始小測驗';
   btnQuiz.onclick = () => startQuiz(date, schedule[date] || []);
   area.appendChild(btnQuiz);
 }
 
-// Build flashcard
+// Create flashcard
 function createFlashcard(ch) {
   const info = tzDict[ch] || {};
   const bop = info.bopomofo || '—';
@@ -127,8 +129,9 @@ function createFlashcard(ch) {
   const renderP = (n) => {
     const arr = phs[String(n)] || [];
     if (!arr.length) return `<div><strong>常用詞（${n}字）：</strong>—</div>`;
-    const lis = arr.map(p => `<li>${p.word} – ${p.zh}</li>`).join('');
-    return `<div><strong>常用詞（${n}字）：</strong></div><ul>${lis}</ul>`;
+    return `<div><strong>常用詞（${n}字）：</strong></div><ul>${
+      arr.map(p => `<li>${p.word} – ${p.zh}</li>`).join('')
+    }</ul>`;
   };
 
   const card = document.createElement('div');
@@ -145,8 +148,8 @@ function createFlashcard(ch) {
   return card;
 }
 
-// Start quiz page
-target function startQuiz(date, chars) {
+// Start quiz
+function startQuiz(date, chars) {
   if (!Array.isArray(chars) || chars.length < 2) {
     alert('今天字數不足無法測驗');
     return;
@@ -155,53 +158,49 @@ target function startQuiz(date, chars) {
   const firstTwo = pool.splice(0,2);
   shuffle(pool);
   const quizChars = firstTwo.concat(pool.slice(0,8));
-  const questions = quizChars.map((ch, i) => {
+  const questions = quizChars.map((ch, idx) => {
+    // Always multiple choice on same page
     const info = tzDict[ch] || {};
     const bop = info.bopomofo || '—';
     const phr2 = info.phrases?.['2'] || [];
-    // Always multiple choice
-    const opts = [];
-    let correct;
-    const type = ['bop','def','phr'][i % 3];
-    if (type === 'bop') {
+    // Random question type
+    let type = ['bop','def','phr'][(idx)%3];
+    if (type==='phr' && phr2.length===0) type='def';
+    let correct, opts;
+    if (type==='bop') {
       correct = bop;
-      opts.push(bop);
-      shuffle(chars);
-      opts.push(chars[2] ? tzDict[chars[2]].bopomofo : '—');
-    } else if (type === 'def') {
+      opts = [bop, bop, bop];
+    } else if (type==='def') {
       correct = info.definition;
-      opts.push(correct);
-      shuffle(chars);
-      opts.push(tzDict[chars[3]]?.definition || '—');
+      opts = [correct, correct, correct];
     } else {
-      const p = phr2[0] || {zh:'—', word:ch};
+      const p = phr2[0] || {zh:'—',word:ch};
       correct = p.zh;
-      opts.push(correct);
-      shuffle(chars);
-      opts.push((tzDict[chars[4]]?.phrases?.['2']||[])[0]?.zh || '—');
+      opts = [correct, correct, correct];
     }
     shuffle(opts);
-    return { ch, question: ch, opts, answer: correct };
+    return { text: ch, options: opts, answer: correct };
   });
   const area = document.getElementById('contentArea');
-  area.innerHTML = `<h2>${date} 小測驗</h2><form id='qf'></form><button id='submit'>提交答案</button>`;
+  area.innerHTML = `<h2>${date} 小測驗</h2><form id="qf"></form><button id="submit">提交答案</button>`;
   const form = document.getElementById('qf');
   questions.forEach((q,i) => {
     const div = document.createElement('div');
-    const choices = q.opts.map((o,j) =>
-      `<label><input type='radio' name='q${i}' value='${o}'>${o}</label>`
+    const ch = q.text;
+    const htmlOpts = q.options.map(opt =>
+      `<label><input type="radio" name="q${i}" value="${opt}">${opt}</label>`
     ).join('<br>');
-    div.innerHTML = `<p>第${i+1}題：請選正確答案</p>${choices}`;
+    div.innerHTML = `<p>第${i+1}題：「${ch}」是？</p>${htmlOpts}`;
     form.appendChild(div);
   });
   document.getElementById('submit').onclick = e => {
     e.preventDefault();
-    let sc=0;
+    let score = 0;
     questions.forEach((q,i) => {
-      if (form[`q${i}`].value === q.answer) sc++;
+      if (form[`q${i}`].value === q.answer) score++;
     });
-    alert(`得分：${sc}/${questions.length}`);
-    localStorage.setItem(`score-${date}`, sc);
+    alert(`得分：${score}/${questions.length}`);
+    localStorage.setItem(`score-${date}`, score);
     loadDay(date);
   };
 }
