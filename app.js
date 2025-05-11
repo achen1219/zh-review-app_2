@@ -9,9 +9,9 @@ function shuffle(arr) {
 }
 
 // 2. 全域變數
-target let tzDict = {};
-target let schedule = {};
-target let curDate = new Date();
+let tzDict = {};
+let schedule = {};
+let curDate = new Date();
 
 // 3. 載入字典與排程
 Promise.all([
@@ -39,7 +39,7 @@ function changeMonth(offset) {
 }
 
 // 6. 繪製月曆
-target function renderCalendar() {
+function renderCalendar() {
   const cal = document.getElementById('calendar');
   cal.innerHTML = '';
   const year = curDate.getFullYear(), month = curDate.getMonth();
@@ -67,14 +67,14 @@ target function renderCalendar() {
 }
 
 // 7. 選擇日期
-target function selectDate(dateStr,cell){
+function selectDate(dateStr,cell){
   document.querySelectorAll('#calendar .selected').forEach(x=>x.classList.remove('selected'));
   cell.classList.add('selected');
   loadDay(dateStr);
 }
 
 // 8. 顯示當日生字與按鈕
-target function loadDay(date){
+function loadDay(date){
   const area = document.getElementById('contentArea');
   const prev = localStorage.getItem(`score-${date}`);
   area.innerHTML = prev!==null
@@ -100,7 +100,7 @@ function createFlashcard(ch){
 }
 
 // 10. 開始小測驗，並顯示對錯詳情
-target function startQuiz(date,chars){
+function startQuiz(date,chars){
   if(!Array.isArray(chars)||chars.length<2){ alert('字數不足'); return; }
   const pool=[...chars], front=pool.splice(0,2); shuffle(pool); const quizChars=front.concat(pool.slice(0,8));
   const allBops=Object.values(tzDict).map(i=>i.bopomofo).filter(x=>x);
