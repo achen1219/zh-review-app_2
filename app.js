@@ -149,58 +149,118 @@ function createFlashcard(ch) {
 }
 
 // Start quiz
+// 開始小測驗：前 2 字 + 隨機 8 字，自動產生「注音」「詞語」「詞義」多選題
 function startQuiz(date, chars) {
   if (!Array.isArray(chars) || chars.length < 2) {
-    alert('今天字數不足無法測驗');
+    alert('今天字數不足，無法進行小測驗');
     return;
   }
+
+  // －－－－－－－－－－
+  // 1. 先取前兩字，再隨機取 8 字
+  // －－－－－－－－－－
   const pool = [...chars];
-  const firstTwo = pool.splice(0,2);
+  const frontTwo = pool.splice(0,2);
   shuffle(pool);
-  const quizChars = firstTwo.concat(pool.slice(0,8));
-  const questions = quizChars.map((ch, idx) => {
-    // Always multiple choice on same page
+  const quizChars = frontTwo.concat(pool.slice(0,8));
+
+  // －－－－－－－－－－
+  // 2. 準備全域干擾選項
+  // －－－－－－－－－－
+  const allBops = Object.values(tzDict)
+    .map(i => i.bopomofo).filter(x => x);
+  const allPhrases = Object.values(tzDict)
+    .flatMap(i => i.phrases?.['2']||[])
+    .map(p => p.word);
+  const allDefs = Object.values(tzDict)
+    .map(i => i.definition).filter(x => x);
+
+  // －－－－－－－－－－
+  // 3. 建立題目陣列
+  // －－－－－－－－－－
+  const questions = quizChars.map(ch => {
     const info = tzDict[ch] || {};
-    const bop = info.bopomofo || '—';
-    const phr2 = info.phrases?.['2'] || [];
-    // Random question type
-    let type = ['bop','def','phr'][(idx)%3];
-    if (type==='phr' && phr2.length===0) type='def';
-    let correct, opts;
-    if (type==='bop') {
-      correct = bop;
-      opts = [bop, bop, bop];
-    } else if (type==='def') {
-      correct = info.definition;
-      opts = [correct, correct, correct];
-    } else {
-      const p = phr2[0] || {zh:'—',word:ch};
-      correct = p.zh;
-      opts = [correct, correct, correct];
+    // 隨機挑題型
+    let types = ['bopomofo','phrase','definition'];
+    let type = types[Math.floor(Math.random()*types.length)];
+    if (type==='phrase' && (!info.phrases || !info.phrases['2'] || info.phrases['2'].length===0)) {
+      type = 'definition';
     }
-    shuffle(opts);
-    return { text: ch, options: opts, answer: correct };
+
+    let question = '', options = [], answer = '';
+
+    if (type === 'bopomofo') {
+      // 注音填空
+      question = `注音填空：「${ch}」的注音是？`;
+      answer = info.bopomofo || '—';
+      const set = new Set([answer]);
+      while (set.size < 4) {
+        set.add(allBops[Math.floor(Math.random()*allBops.length)]);
+      }
+      options = Array.from(set);
+      shuffle(options);
+
+    } else if (type === 'phrase') {
+      // 詞語辨識
+      const phr = info.phrases['2'][0];
+      question = `詞語辨識：下列哪一個是「${ch}」的常用詞？`;
+      answer = phr.word;
+      const set = new Set([answer]);
+      while (set.size < 4) {
+        set.add(allPhrases[Math.floor(Math.random()*allPhrases.length)]);
+      }
+      options = Array.from(set);
+      shuffle(options);
+
+    } else {
+      // 詞義判斷
+      question = `詞義判斷：「${ch}」的定義是？`;
+      answer = info.definition || '—';
+      const set = new Set([answer]);
+      while (set.size < 4) {
+        set.add(allDefs[Math.floor(Math.random()*allDefs.length)]);
+      }
+      options = Array.from(set);
+      shuffle(options);
+    }
+
+    return { question, options, answer };
   });
+
+  // －－－－－－－－－－
+  // 4. 渲染表單
+  // －－－－－－－－－－
   const area = document.getElementById('contentArea');
-  area.innerHTML = `<h2>${date} 小測驗</h2><form id="qf"></form><button id="submit">提交答案</button>`;
-  const form = document.getElementById('qf');
+  area.innerHTML = `
+    <h2>${date} 小測驗</h2>
+    <form id="quizForm"></form>
+    <button id="submitQuiz">提交答案</button>
+  `;
+  const form = document.getElementById('quizForm');
+
   questions.forEach((q,i) => {
     const div = document.createElement('div');
-    const ch = q.text;
-    const htmlOpts = q.options.map(opt =>
-      `<label><input type="radio" name="q${i}" value="${opt}">${opt}</label>`
-    ).join('<br>');
-    div.innerHTML = `<p>第${i+1}題：「${ch}」是？</p>${htmlOpts}`;
+    let html = `<p>第 ${i+1} 題：${q.question}</p>`;
+    html += q.options.map(o =>
+      `<label>
+         <input type="radio" name="q${i}" value="${o}"> ${o}
+       </label><br>`
+    ).join('');
+    div.innerHTML = html;
     form.appendChild(div);
   });
-  document.getElementById('submit').onclick = e => {
+
+  // －－－－－－－－－－
+  // 5. 提交評分並儲存
+  // －－－－－－－－－－
+  document.getElementById('submitQuiz').onclick = e => {
     e.preventDefault();
     let score = 0;
     questions.forEach((q,i) => {
       if (form[`q${i}`].value === q.answer) score++;
     });
-    alert(`得分：${score}/${questions.length}`);
+    alert(`小測驗結束！答對 ${score} / ${questions.length} 題。`);
     localStorage.setItem(`score-${date}`, score);
-    loadDay(date);
+    loadDay(date);  // 回到生字頁面
   };
 }
