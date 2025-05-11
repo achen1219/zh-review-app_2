@@ -112,124 +112,91 @@ function loadDay(date) {
   area.appendChild(btnDone);
 
   // Start quiz
-  const btnQuiz = document.createElement('button');
-  btnQuiz.textContent = '開始小測驗';
-  btnQuiz.onclick = () => startQuiz(date, schedule[date] || []);
-  area.appendChild(btnQuiz);
-}
-
-// Create flashcard
-function createFlashcard(ch) {
-  const info = tzDict[ch] || {};
-  const bop = info.bopomofo || '—';
-  const rad = info.radical  || '—';
-  const def = info.definition || '—';
-  const phs = info.phrases || {'2':[], '3':[], '4':[]};
-
-  const renderP = (n) => {
-    const arr = phs[String(n)] || [];
-    if (!arr.length) return `<div><strong>常用詞（${n}字）：</strong>—</div>`;
-    return `<div><strong>常用詞（${n}字）：</strong></div><ul>${
-      arr.map(p => `<li>${p.word} – ${p.zh}</li>`).join('')
-    }</ul>`;
-  };
-
-  const card = document.createElement('div');
-  card.className = 'flashcard';
-  card.innerHTML = `
-    <h4>${ch}</h4>
-    <div><strong>注音：</strong>${bop}</div>
-    <div><strong>部首：</strong>${rad}</div>
-    <div><strong>定義：</strong>${def}</div>
-    ${renderP(2)}
-    ${renderP(3)}
-    ${renderP(4)}
-  `;
-  return card;
-}
-
-// Start quiz
-// 開始小測驗：前 2 字 + 隨機 8 字，自動產生「注音」「詞語」「詞義」多選題
+ // 開始小測驗：自動產生注音、詞義、詞語、組詞四種題型
 function startQuiz(date, chars) {
   if (!Array.isArray(chars) || chars.length < 2) {
     alert('今天字數不足，無法進行小測驗');
     return;
   }
 
-  // －－－－－－－－－－
-  // 1. 先取前兩字，再隨機取 8 字
-  // －－－－－－－－－－
+  // 1. 前兩字 + 隨機取 8 字
   const pool = [...chars];
-  const frontTwo = pool.splice(0,2);
+  const frontTwo = pool.splice(0, 2);
   shuffle(pool);
-  const quizChars = frontTwo.concat(pool.slice(0,8));
+  const quizChars = frontTwo.concat(pool.slice(0, 8));
 
-  // －－－－－－－－－－
-  // 2. 準備全域干擾選項
-  // －－－－－－－－－－
-  const allBops = Object.values(tzDict)
-    .map(i => i.bopomofo).filter(x => x);
+  // 2. 全域干擾資料
+  const allBops    = Object.values(tzDict).map(i => i.bopomofo).filter(x=>x);
+  const allDefs    = Object.values(tzDict).map(i => i.definition).filter(x=>x);
   const allPhrases = Object.values(tzDict)
     .flatMap(i => i.phrases?.['2']||[])
     .map(p => p.word);
-  const allDefs = Object.values(tzDict)
-    .map(i => i.definition).filter(x => x);
+  const allCharsInPhrases = allPhrases.join('').split('');
 
-  // －－－－－－－－－－
-  // 3. 建立題目陣列
-  // －－－－－－－－－－
+  // 3. 組題
   const questions = quizChars.map(ch => {
     const info = tzDict[ch] || {};
     // 隨機挑題型
-    let types = ['bopomofo','phrase','definition'];
+    let types = ['bopomofo','definition','phrase','combine'];
     let type = types[Math.floor(Math.random()*types.length)];
-    if (type==='phrase' && (!info.phrases || !info.phrases['2'] || info.phrases['2'].length===0)) {
+    // 若無短語，跳過詞語
+    if (type==='phrase' && (!info.phrases||!info.phrases['2']||!info.phrases['2'].length)) {
       type = 'definition';
     }
+    // 若無短語，跳過組詞
+    if (type==='combine' && (!info.phrases||!info.phrases['2']||!info.phrases['2'].length)) {
+      type = 'bopomofo';
+    }
 
-    let question = '', options = [], answer = '';
+    let text='', opts=[], ans='';
 
-    if (type === 'bopomofo') {
-      // 注音填空
-      question = `注音填空：「${ch}」的注音是？`;
-      answer = info.bopomofo || '—';
-      const set = new Set([answer]);
+    if (type==='bopomofo') {
+      text = `注音填空：「${ch}」的注音是？`;
+      ans  = info.bopomofo || '—';
+      const set = new Set([ans]);
       while (set.size < 4) {
         set.add(allBops[Math.floor(Math.random()*allBops.length)]);
       }
-      options = Array.from(set);
-      shuffle(options);
+      opts = Array.from(set);
+      shuffle(opts);
 
-    } else if (type === 'phrase') {
-      // 詞語辨識
-      const phr = info.phrases['2'][0];
-      question = `詞語辨識：下列哪一個是「${ch}」的常用詞？`;
-      answer = phr.word;
-      const set = new Set([answer]);
-      while (set.size < 4) {
-        set.add(allPhrases[Math.floor(Math.random()*allPhrases.length)]);
-      }
-      options = Array.from(set);
-      shuffle(options);
-
-    } else {
-      // 詞義判斷
-      question = `詞義判斷：「${ch}」的定義是？`;
-      answer = info.definition || '—';
-      const set = new Set([answer]);
+    } else if (type==='definition') {
+      text = `詞義判斷：「${ch}」的定義是？`;
+      ans  = info.definition || '—';
+      const set = new Set([ans]);
       while (set.size < 4) {
         set.add(allDefs[Math.floor(Math.random()*allDefs.length)]);
       }
-      options = Array.from(set);
-      shuffle(options);
+      opts = Array.from(set);
+      shuffle(opts);
+
+    } else if (type==='phrase') {
+      text = `詞語辨識：下列哪一個是含「${ch}」的正確常用詞？`;
+      ans  = info.phrases['2'][0].word;
+      const set = new Set([ans]);
+      while (set.size < 4) {
+        set.add(allPhrases[Math.floor(Math.random()*allPhrases.length)]);
+      }
+      opts = Array.from(set);
+      shuffle(opts);
+
+    } else { // combine
+      const word = info.phrases['2'][0].word;  // e.g. "障礙"
+      text = `詞語辨識：下列哪個字可以和「${ch}」組成常用詞？`;
+      // 另一半
+      ans  = word.replace(ch,'');
+      const set = new Set([ans]);
+      while (set.size < 4) {
+        set.add(allCharsInPhrases[Math.floor(Math.random()*allCharsInPhrases.length)]);
+      }
+      opts = Array.from(set);
+      shuffle(opts);
     }
 
-    return { question, options, answer };
+    return { text, options: opts, answer: ans };
   });
 
-  // －－－－－－－－－－
-  // 4. 渲染表單
-  // －－－－－－－－－－
+  // 4. 渲染到同一頁
   const area = document.getElementById('contentArea');
   area.innerHTML = `
     <h2>${date} 小測驗</h2>
@@ -240,27 +207,25 @@ function startQuiz(date, chars) {
 
   questions.forEach((q,i) => {
     const div = document.createElement('div');
-    let html = `<p>第 ${i+1} 題：${q.question}</p>`;
-    html += q.options.map(o =>
-      `<label>
-         <input type="radio" name="q${i}" value="${o}"> ${o}
-       </label><br>`
-    ).join('');
+    let html = `<p>第 ${i+1} 題：${q.text}</p>`;
+    q.options.forEach(o => {
+      html += `<label>
+                 <input type="radio" name="q${i}" value="${o}"> ${o}
+               </label><br>`;
+    });
     div.innerHTML = html;
     form.appendChild(div);
   });
 
-  // －－－－－－－－－－
-  // 5. 提交評分並儲存
-  // －－－－－－－－－－
+  // 5. 提交評分並存檔
   document.getElementById('submitQuiz').onclick = e => {
     e.preventDefault();
     let score = 0;
     questions.forEach((q,i) => {
       if (form[`q${i}`].value === q.answer) score++;
     });
-    alert(`小測驗結束！答對 ${score} / ${questions.length} 題。`);
+    alert(`測驗結束！你答對 ${score}/${questions.length} 題`);
     localStorage.setItem(`score-${date}`, score);
-    loadDay(date);  // 回到生字頁面
+    loadDay(date);
   };
 }
