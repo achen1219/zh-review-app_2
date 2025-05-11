@@ -148,7 +148,7 @@ function createFlashcard(ch) {
 }
 
 // Start quiz with mixed Chinese-only questions and save score
-target function startQuiz(date, chars) {
+function startQuiz(date, chars) {
   if (!chars || chars.length < 2) {
     alert('今天沒有足夠的字來進行小測驗');
     return;
