@@ -70,6 +70,26 @@
   <!-- 生字卡片顯示區 -->
   <main id="contentArea"></main>
 
+  <style>
+    /* 1. 定義自訂字型 */
+    @font-face {
+      font-family: 'ToneOZZhuyin';
+      src: url('./fonts/ToneOZ-Zhuyin-Tsuipita-TC.woff2') format('woff2');
+      font-weight: normal;
+      font-style: normal;
+    }
+
+    /* 2. 只讓 flashcard 使用這個字型 */
+    .flashcard {
+      font-family: 'ToneOZZhuyin', serif;
+    }
+
+    /* 如果要讓注音也套同一字型，就再加： */
+    .flashcard span.pinyin {
+      font-family: 'ToneOZZhuyin', serif;
+    }
+  </style>
+
   <!-- 載入 app.js -->
   <script src="app.js"></script>
 </body>
