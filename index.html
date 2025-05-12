@@ -77,17 +77,22 @@
       src: url('./fonts/ToneOZ-Zhuyin-Tsuipita-TC.woff2') format('woff2');
       font-weight: normal;
       font-style: normal;
+      
     }
 
-    /* 2. 只讓 flashcard 使用這個字型 */
-    .flashcard {
-      font-family: 'ToneOZZhuyin', serif;
-    }
+   /* 2. 只讓 flashcard 使用這個字型，並放大字型 */
+.flashcard {
+  font-family: 'ToneOZZhuyin', serif;
+  font-size: 1.5rem;    /* 主字放大到 1.5 倍 */
+  line-height: 1.4;     /* 增加行高，避免擠在一起 */
+}
 
-    /* 如果要讓注音也套同一字型，就再加： */
-    .flashcard span.pinyin {
-      font-family: 'ToneOZZhuyin', serif;
-    }
+/* 放大注音字型 */
+.flashcard span.pinyin {
+  font-family: 'ToneOZZhuyin', serif;
+  font-size: 1.3rem;    /* 注音放大到 1.3 倍 */
+  line-height: 1.2;
+}
   </style>
 
   <!-- 載入 app.js -->
