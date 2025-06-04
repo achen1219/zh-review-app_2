@@ -140,7 +140,7 @@ function startQuiz(date,chars){
       const lens=['2','3','4'].filter(l=>info.phrases?.[l]?.length);
       const l=lens[Math.floor(Math.random()*lens.length)];
       const phr=info.phrases[l][Math.floor(Math.random()*info.phrases[l].length)];
-      text=`詞義判斷：「${phr.word}」是用來做什麼？`;
+      text=`詞義判斷：「${phr.word}」是什麼意思？`;
       ans=phr.zh;
       const s=new Set([ans]); while(s.size<4) s.add(allPhraseDefs[Math.floor(Math.random()*allPhraseDefs.length)]);
       opts=Array.from(s); shuffle(opts);
