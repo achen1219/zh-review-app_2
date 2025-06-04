@@ -52,7 +52,8 @@ function renderCalendar() {
   for(let i=0;i<firstDow;i++) cal.appendChild(document.createElement('div'));
 
   const daysInMonth = new Date(year, month+1,0).getDate();
-  const today = new Date().toISOString().slice(0,10);
+  // Use local date to avoid timezone issues
+  const today = new Date().toLocaleDateString('en-CA');
   for(let d=1;d<=daysInMonth;d++){
     const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
     const cell = document.createElement('div'); cell.textContent=d; cell.dataset.date=dateStr;
