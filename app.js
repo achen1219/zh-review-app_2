@@ -1,4 +1,4 @@
-// app.js
+/ app.js
 
 // 1. Fisher–Yates 洗牌
 function shuffle(arr) {
@@ -92,9 +92,6 @@ function loadDay(date){
   const btnMem=document.createElement('button'); btnMem.textContent='配對遊戲';
   btnMem.onclick=()=>startMemoryGame(date,schedule[date]||[]);
   area.appendChild(btnMem);
-  const btnMem=document.createElement('button'); btnMem.textContent='配對遊戲';
-  btnMem.onclick=()=>startMemoryGame(date,schedule[date]||[]);
-  area.appendChild(btnMem);
 }
 
 // 9. 建立生字卡
@@ -183,7 +180,6 @@ function startQuiz(date,chars){
   localStorage.setItem(`score-${date}`,score);
   };
 }
-
 // 11. 配對遊戲：將字與注音配對
 function startMemoryGame(date, chars){
   if(!Array.isArray(chars)||chars.length<2){ alert('字數不足'); return; }
@@ -202,7 +198,6 @@ function startMemoryGame(date, chars){
   cards.forEach((c,i)=>{
     const d=document.createElement('div');
     d.className='card';
-    if(c.type==='b') d.classList.add('bopomo');
     d.dataset.char=c.char;
     d.dataset.type=c.type;
     d.dataset.idx=i;
