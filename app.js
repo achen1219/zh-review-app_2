@@ -1,4 +1,4 @@
-/ app.js
+// app.js
 
 // 1. Fisher–Yates 洗牌
 function shuffle(arr) {
@@ -89,9 +89,6 @@ function loadDay(date){
   area.appendChild(btnDone);
   const btnQuiz=document.createElement('button'); btnQuiz.textContent='開始小測驗'; btnQuiz.onclick=()=>startQuiz(date,schedule[date]||[]);
   area.appendChild(btnQuiz);
-  const btnMem=document.createElement('button'); btnMem.textContent='配對遊戲';
-  btnMem.onclick=()=>startMemoryGame(date,schedule[date]||[]);
-  area.appendChild(btnMem);
 }
 
 // 9. 建立生字卡
@@ -176,59 +173,7 @@ function startQuiz(date,chars){
     });
     html+='</ul><button id="back">回到生字頁</button>';
     area.innerHTML=html;
-  document.getElementById('back').onclick=()=>loadDay(date);
-  localStorage.setItem(`score-${date}`,score);
+    document.getElementById('back').onclick=()=>loadDay(date);
+    localStorage.setItem(`score-${date}`,score);
   };
-}
-// 11. 配對遊戲：將字與注音配對
-function startMemoryGame(date, chars){
-  if(!Array.isArray(chars)||chars.length<2){ alert('字數不足'); return; }
-  const picks=chars.slice(0,6);
-  const cards=[];
-  picks.forEach(ch=>{
-    const info=tzDict[ch]||{};
-    const bop=info.bopomofo||'—';
-    cards.push({char:ch,text:ch,type:'c'});
-    cards.push({char:ch,text:bop,type:'b'});
-  });
-  shuffle(cards);
-  const area=document.getElementById('contentArea');
-  area.innerHTML=`<h2>${date} 配對遊戲</h2><div id="mg" class="memory-game"></div><button id="back">回到生字頁</button>`;
-  const mg=document.getElementById('mg');
-  cards.forEach((c,i)=>{
-    const d=document.createElement('div');
-    d.className='card';
-    d.dataset.char=c.char;
-    d.dataset.type=c.type;
-    d.dataset.idx=i;
-    d.onclick=()=>flip(d,c);
-    mg.appendChild(d);
-  });
-  document.getElementById('back').onclick=()=>loadDay(date);
-  let first=null; let lock=false; let matched=0;
-  function flip(ele,data){
-    if(lock||ele.classList.contains('matched')||ele.textContent) return;
-    ele.textContent=data.text;
-    if(!first){ first={ele,data}; }
-    else {
-      lock=true;
-      if(first.data.char===data.char && first.data.type!==data.type){
-        setTimeout(()=>{
-          ele.classList.add('matched');
-          first.ele.classList.add('matched');
-          matched+=1;
-          first=null; lock=false;
-          if(matched===picks.length){
-            setTimeout(()=>alert('完成！'),300);
-          }
-        },300);
-      } else {
-        setTimeout(()=>{
-          ele.textContent='';
-          first.ele.textContent='';
-          first=null; lock=false;
-        },700);
-      }
-    }
-  }
 }
